@@ -1,10 +1,26 @@
 [
   {
-    "inmatriculare": "B 01 ABC",
-    "marca": "Dacia",
-    "model": "Logan",
+    "inmatriculare": "Gr 10 XLA",
+    "marca": "WV",
+    "model": "PASSAT CC",
+    "itp": "2025-09-10",
+    "rovinieta": "2026-01-15",
+    "rca": "2025-11-01"
+  },
+    {
+    "inmatriculare": "GR 04 NOW",
+    "marca": "SEAT",
+    "model": "CORDOBA",
     "itp": "2025-10-25",
     "rovinieta": "2026-01-15",
     "rca": "2025-11-01"
-  }
+  },
+    {
+    "inmatriculare": "GR 38 BBY",
+    "marca": "SKODA",
+    "model": "SUPERB",
+    "itp": "2025-10-25",
+    "rovinieta": "2026-01-15",
+    "rca": "2025-11-01"
+  },
 ]
