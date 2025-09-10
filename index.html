@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panou de control Mașini</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #3b82f6;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 flex flex-col items-center">
+
+    <!-- Suprapunere de încărcare -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Container principal -->
+    <div class="w-full max-w-5xl bg-white rounded-xl shadow-lg p-6 md:p-8">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Panou de control Mașini</h1>
+            <p class="text-gray-600 mt-2">Gestionează și urmărește scadențele importante ale vehiculelor tale.</p>
+        </header>
+
+        <!-- Container pentru ID-ul utilizatorului -->
+        <div class="text-center mb-6 p-4 bg-gray-50 rounded-lg">
+            <p class="text-sm text-gray-500">
+                ID-ul tău de utilizator (pentru accesul de pe alte dispozitive):
+            </p>
+            <p id="userIdDisplay" class="font-mono font-bold text-gray-700 text-sm break-all mt-2"></p>
+        </div>
+
+        <!-- Tabel cu datele mașinilor -->
+        <div class="overflow-x-auto rounded-lg shadow-sm">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nr. Înmatriculare</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marcă</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ITP</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rovinietă</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RCA</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acțiuni</th>
+                    </tr>
+                </thead>
+                <tbody id="carTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Rândurile tabelului vor fi inserate aici de JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Butoane de acțiune -->
+        <div class="mt-6 flex flex-wrap justify-center gap-4">
+            <button onclick="showAddModal()" class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Adaugă Mașină
+            </button>
+            <button onclick="editCar()" class="flex items-center px-4 py-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                </svg>
+                Modifică
+            </button>
+            <button onclick="deleteCar()" class="flex items-center px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+                Șterge
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de adăugare/modificare -->
+    <div id="carModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md relative">
+            <h2 id="modalTitle" class="text-2xl font-bold mb-4">Adaugă Mașină</h2>
+            <form id="carForm">
+                <input type="hidden" id="carId">
+                <div class="mb-4">
+                    <label for="inmatriculare" class="block text-gray-700 font-semibold mb-2">Nr. Înmatriculare</label>
+                    <input type="text" id="inmatriculare" name="inmatriculare" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: B 01 ABC">
+                </div>
+                <div class="mb-4">
+                    <label for="marca" class="block text-gray-700 font-semibold mb-2">Marcă</label>
+                    <input type="text" id="marca" name="marca" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Dacia">
+                </div>
+                <div class="mb-4">
+                    <label for="model" class="block text-gray-700 font-semibold mb-2">Model</label>
+                    <input type="text" id="model" name="model" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Logan">
+                </div>
+                <div class="mb-4">
+                    <label for="itp" class="block text-gray-700 font-semibold mb-2">ITP (AAAA-LL-ZZ)</label>
+                    <input type="date" id="itp" name="itp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label for="rovinieta" class="block text-gray-700 font-semibold mb-2">Rovinietă (AAAA-LL-ZZ)</label>
+                    <input type="date" id="rovinieta" name="rovinieta" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label for="rca" class="block text-gray-700 font-semibold mb-2">RCA (AAAA-LL-ZZ)</label>
+                    <input type="date" id="rca" name="rca" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeModal()" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors">Anulează</button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors">Salvează</button>
+                </div>
+            </form>
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK-uri -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth, userId;
+        let carsCollection;
+        let selectedCarId = null;
+
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        function showLoading() {
+            loadingOverlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
+        }
+
+        // Inițializează Firebase și autentificare
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        async function initAuth() {
+            try {
+                if (authToken) {
+                    await signInWithCustomToken(auth, authToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                document.getElementById('userIdDisplay').innerText = userId;
+                carsCollection = collection(db, `artifacts/${appId}/users/${userId}/cars`);
+                listenForCars();
+            } catch (error) {
+                console.error("Eroare la autentificare Firebase:", error);
+            }
+        }
+
+        function listenForCars() {
+            showLoading();
+            onSnapshot(carsCollection, (querySnapshot) => {
+                const cars = [];
+                querySnapshot.forEach((doc) => {
+                    cars.push({ id: doc.id, ...doc.data() });
+                });
+                renderCars(cars);
+                hideLoading();
+            }, (error) => {
+                console.error("Eroare la obținerea datelor:", error);
+                hideLoading();
+            });
+        }
+
+        function renderCars(cars) {
+            const tableBody = document.getElementById('carTableBody');
+            tableBody.innerHTML = '';
+            const today = new Date();
+
+            cars.forEach(car => {
+                const row = document.createElement('tr');
+                let rowColorClass = '';
+
+                const itpDate = car.itp ? new Date(car.itp) : null;
+                const rovinietaDate = car.rovinieta ? new Date(car.rovinieta) : null;
+                const rcaDate = car.rca ? new Date(car.rca) : null;
+
+                const formatDate = (dateString, isExpired) => {
+                    if (!dateString) return 'N/A';
+                    const date = new Date(dateString);
+                    const formattedDate = date.toLocaleDateString('ro-RO');
+                    const timeDifference = date.getTime() - today.getTime();
+                    const daysLeft = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+                    
+                    if (isExpired) {
+                        return `${formattedDate} (EXPIRAT!)`;
+                    }
+                    if (daysLeft <= 30) {
+                        if (daysLeft <= 0) {
+                            return `${formattedDate} (Azi!)`;
+                        } else {
+                            return `${formattedDate} (${daysLeft} zile)`;
+                        }
+                    }
+                    return formattedDate;
+                };
+
+                const isUrgent = (date) => {
+                    if (!date) return false;
+                    const timeDifference = date.getTime() - today.getTime();
+                    const daysLeft = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+                    return daysLeft <= 30;
+                };
+
+                const isExpired = (date) => {
+                    if (!date) return false;
+                    return date.getTime() < today.getTime();
+                };
+
+                if (isUrgent(itpDate) || isUrgent(rovinietaDate) || isUrgent(rcaDate)) {
+                    rowColorClass = 'bg-yellow-100';
+                }
+                if (isExpired(itpDate) || isExpired(rovinietaDate) || isExpired(rcaDate)) {
+                    rowColorClass = 'bg-red-200';
+                }
+
+                row.className = `${rowColorClass} hover:bg-gray-100 transition-colors cursor-pointer`;
+                row.setAttribute('data-id', car.id);
+                row.setAttribute('onclick', `selectCar('${car.id}')`);
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${car.inmatriculare}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${car.marca}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${car.model}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${formatDate(car.itp, isExpired(itpDate))}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${formatDate(car.rovinieta, isExpired(rovinietaDate))}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${formatDate(car.rca, isExpired(rcaDate))}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="event.stopPropagation(); showEditModal('${car.id}')" class="text-indigo-600 hover:text-indigo-900 transition-colors">Editare</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function selectCar(id) {
+            const allRows = document.querySelectorAll('#carTableBody tr');
+            allRows.forEach(row => row.classList.remove('bg-blue-200'));
+            
+            const selectedRow = document.querySelector(`[data-id="${id}"]`);
+            if (selectedRow) {
+                selectedRow.classList.add('bg-blue-200');
+                selectedCarId = id;
+            }
+        }
+
+        window.showAddModal = () => {
+            selectedCarId = null;
+            document.getElementById('modalTitle').innerText = 'Adaugă Mașină';
+            document.getElementById('carForm').reset();
+            document.getElementById('carModal').classList.remove('hidden');
+        };
+
+        window.showEditModal = (id) => {
+            selectedCarId = id;
+            document.getElementById('modalTitle').innerText = 'Modifică Mașină';
+            const car = getCarById(id);
+            if (car) {
+                document.getElementById('inmatriculare').value = car.inmatriculare;
+                document.getElementById('marca').value = car.marca;
+                document.getElementById('model').value = car.model;
+                document.getElementById('itp').value = car.itp;
+                document.getElementById('rovinieta').value = car.rovinieta;
+                document.getElementById('rca').value = car.rca;
+                document.getElementById('carModal').classList.remove('hidden');
+            }
+        };
+
+        window.closeModal = () => {
+            document.getElementById('carModal').classList.add('hidden');
+            document.getElementById('carForm').reset();
+            selectedCarId = null;
+        };
+        
+        async function getCarById(id) {
+            const cars = await getDocs(carsCollection);
+            const carData = cars.docs.find(doc => doc.id === id);
+            return carData ? carData.data() : null;
+        }
+
+        async function addCar() {
+            const formData = new FormData(document.getElementById('carForm'));
+            const data = Object.fromEntries(formData.entries());
+
+            if (!data.inmatriculare || !data.marca || !data.model || !data.itp || !data.rovinieta || !data.rca) {
+                alert("Toate câmpurile sunt obligatorii!");
+                return;
+            }
+
+            showLoading();
+            await addDoc(carsCollection, data);
+            closeModal();
+            hideLoading();
+        }
+
+        async function updateCar(id) {
+            const formData = new FormData(document.getElementById('carForm'));
+            const data = Object.fromEntries(formData.entries());
+            
+            showLoading();
+            await setDoc(doc(db, `artifacts/${appId}/users/${userId}/cars`, id), data);
+            closeModal();
+            hideLoading();
+        }
+
+        window.deleteCar = async () => {
+            if (!selectedCarId) {
+                alert("Selectează o mașină din listă pentru a o șterge.");
+                return;
+            }
+            if (confirm("Ești sigur că vrei să ștergi această mașină?")) {
+                showLoading();
+                await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/cars`, selectedCarId));
+                selectedCarId = null;
+                hideLoading();
+            }
+        };
+
+        window.editCar = () => {
+            if (!selectedCarId) {
+                alert("Selectează o mașină din listă pentru a o modifica.");
+                return;
+            }
+            showEditModal(selectedCarId);
+        };
+
+        document.getElementById('carForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (selectedCarId) {
+                await updateCar(selectedCarId);
+            } else {
+                await addCar();
+            }
+        });
+
+        // Apel inițial pentru a începe procesul de autentificare și ascultare a datelor
+        window.onload = () => {
+            initAuth();
+        };
+
+    </script>
+</body>
+</html>
