@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "inmatriculare": "B 01 ABC",
+    "marca": "Dacia",
+    "model": "Logan",
+    "itp": "2025-10-25",
+    "rovinieta": "2026-01-15",
+    "rca": "2025-11-01"
+  },
+  {
+    "inmatriculare": "OT 45 XYZ",
+    "marca": "Ford",
+    "model": "Focus",
+    "itp": "2026-03-20",
+    "rovinieta": "2026-05-10",
+    "rca": "2026-02-28"
+  }
+]
