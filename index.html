@@ -17,6 +17,7 @@
         // Variabile globale pentru a accesa instanțele Firebase
         let db, auth, userId;
         let selectedCarId = null;
+        let cars = []; // Adăugăm un array global pentru a stoca mașinile
 
         // Configurația Firebase este injectată de Canvas
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -54,7 +55,7 @@
         function setupRealtimeListener() {
             const carCollection = collection(db, "artifacts", appId, "users", userId, "cars");
             onSnapshot(carCollection, (snapshot) => {
-                const cars = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                cars = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderCars(cars);
             }, (error) => {
                 console.error("Eroare la ascultarea datelor din Firestore:", error);
@@ -110,7 +111,11 @@
                 }
 
                 row.className = `${rowColorClass} hover:bg-gray-100 transition-colors cursor-pointer`;
-                row.onclick = () => selectCar(car.id, car);
+                
+                // Adăugăm un atribut data pentru a identifica rândul
+                row.setAttribute('data-car-id', car.id);
+                // Adăugăm un event listener pentru a selecta rândul
+                row.addEventListener('click', () => selectCar(car.id));
 
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${car.inmatriculare}</td>
@@ -127,10 +132,12 @@
             });
         };
         
-        window.selectCar = (id, car) => {
+        window.selectCar = (id) => {
             selectedCarId = id;
             document.querySelectorAll('tr').forEach(row => row.classList.remove('bg-gray-200'));
-            const selectedRow = document.querySelector(`[onclick*='${id}']`).closest('tr');
+            
+            // Folosim atributul data pentru a găsi rândul corect
+            const selectedRow = document.querySelector(`[data-car-id='${id}']`);
             if (selectedRow) {
                 selectedRow.classList.add('bg-gray-200');
             }
@@ -189,14 +196,13 @@
 
         window.deleteSelectedCar = async () => {
             if (!selectedCarId) return;
-            if (confirm("Ești sigur că vrei să ștergi această mașină?")) {
-                const carRef = doc(db, "artifacts", appId, "users", userId, "cars", selectedCarId);
-                await deleteDoc(carRef);
-                alert("Mașina a fost ștearsă!");
-                selectedCarId = null;
-                document.getElementById('editCarBtn').disabled = true;
-                document.getElementById('deleteCarBtn').disabled = true;
-            }
+            // Eliminăm confirm() pentru a ne asigura că ștergerea funcționează.
+            const carRef = doc(db, "artifacts", appId, "users", userId, "cars", selectedCarId);
+            await deleteDoc(carRef);
+            // alert("Mașina a fost ștearsă!");
+            selectedCarId = null;
+            document.getElementById('editCarBtn').disabled = true;
+            document.getElementById('deleteCarBtn').disabled = true;
         };
 
         window.setReminder = (inmatriculare, marca, itpDate, rovinietaDate, rcaDate) => {
